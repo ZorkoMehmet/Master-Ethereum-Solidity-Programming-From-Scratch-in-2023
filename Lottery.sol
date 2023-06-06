@@ -25,8 +25,11 @@ contract Lottery{
     }
 
     function pickWinner() public {
-        require(msg.sender == manager);
         require(players.length >= 3);
+
+        if(players.length < 10){
+            require(msg.sender == manager);
+        }
 
         address payable winner;
         uint r = random();
