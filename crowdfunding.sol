@@ -82,7 +82,7 @@ contract CrowdFunding{
     function voteRequest(uint _requestNo) public {
         require(contributors[msg.sender] > 0, "You must be a contributor to vote.");
         Request storage thisRequest = requests[_requestNo];
-        require(thisRequest.voters[msg.sender] = false, "You have already voted.");
+        require(thisRequest.voters[msg.sender] == false, "You have already voted.");
         thisRequest.voters[msg.sender] = true;
         thisRequest.noOfVoters++;
     }
@@ -90,7 +90,7 @@ contract CrowdFunding{
     function makePayment(uint _requestNo) public onlyAdmin{
         require(raisedAmount >= goal);
         Request storage thisRequest = requests[_requestNo];
-        require(thisRequest.completed = false, "Request has been completed.");
+        require(thisRequest.completed == false, "Request has been completed.");
         require(thisRequest.noOfVoters > noOfContributors / 2);
 
         thisRequest.recipient.transfer(thisRequest.value);
