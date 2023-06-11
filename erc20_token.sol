@@ -74,3 +74,56 @@ contract Cryptos is ERC20Interface{
         }
 
 }
+
+
+contract CryptosICO is Cryptos{
+    address public admin;
+    address payable public deposit;
+    uint tokenPrice = 0.001 ether;
+    uint raisedAmount;
+    uint maxInvestment = 5 ether;
+    uint minInvestment = 0.1 ether;
+    uint hardcap = 300 ether;
+    uint saleStart = block.timestamp;
+    uint saleEnd = saleStart + 604800; // ICO ends in one week.
+    uint tokenTradaStart = saleEnd + 604800;
+
+    enum State{beforeStart, running, afterEnd, halted}
+    State public icoState;
+
+    constructor(address payable _deposit){
+        admin = msg.sender;
+        deposit = _deposit;
+        icoState = State.beforeStart;
+    }
+
+    modifier onlyAdmin(){
+        require(msg.sender == admin);
+        _;
+    }
+
+    function halt() public onlyAdmin{
+        icoState = State.halted;
+    }
+
+    function resume() public onlyAdmin{
+        icoState = State.running;
+    }
+
+    function changeDepositAddress(address payable newDeposit) public onlyAdmin{
+        deposit = newDeposit;
+    }
+
+    function getCurrentState() public view returns(State){
+        if(icoState == State.halted){
+            return State.halted;
+        }else if(block.timestamp < saleStart){
+            return State.beforeStart;
+        }else if(block.timestamp >= saleStart && block.timestamp < saleEnd){
+            return State.running;
+        }else{
+            return State.afterEnd;
+        }
+    }
+
+}
