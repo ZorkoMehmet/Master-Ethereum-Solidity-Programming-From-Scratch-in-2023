@@ -7,12 +7,12 @@ interface ERC20Interface{
     function balanceOf(address tokenOwner) external view returns(uint balance);
     function transfer(address to, uint tokens) external returns(bool success);
 
-    // function allowance(address tokenOwner, address spender) external view returns(uint remaining);
-    // function approve(address spender, uint tokens) external returns(bool success);
-    // function transferFrom(address from, address to, uint tokens) external returns(bool success);
+    function allowance(address tokenOwner, address spender) external view returns(uint remaining);
+    function approve(address spender, uint tokens) external returns(bool success);
+    function transferFrom(address from, address to, uint tokens) external returns(bool success);
 
     event Transfer(address indexed from, address indexed to, uint tokens);
-    // event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
+    event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
 }
 
 contract Cryptos is ERC20Interface{
@@ -23,6 +23,9 @@ contract Cryptos is ERC20Interface{
 
         address public founder;
         mapping(address => uint) balances;
+
+        mapping(address => mapping(address => uint)) allowed;
+
 
         constructor(){
           totalSupply = 1000000;
@@ -41,6 +44,32 @@ contract Cryptos is ERC20Interface{
 
             emit Transfer(msg.sender, to, tokens);
 
+            return true;
+        }
+
+            function allowance(address tokenOwner, address spender) public view override returns(uint remaining){
+            return allowed[tokenOwner][spender];
+        }
+
+        function approve(address spender, uint tokens) public override returns(bool success){
+            require(balances[msg.sender] >= tokens);
+            require(tokens > 0);
+
+            allowed[msg.sender][spender] = tokens;
+
+            emit Approval(msg.sender, spender, tokens);
+            return true;
+        }
+
+        function transferFrom(address from, address to, uint tokens) public override returns(bool success){
+            require(allowed[from][msg.sender] >= tokens);
+            require(balances[from] >= tokens);
+
+            balances[from] -= tokens;
+            allowed[from][msg.sender] -= tokens;
+            balances[to] += tokens;
+
+            emit Transfer(from, to, tokens);
             return true;
         }
 
